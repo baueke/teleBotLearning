@@ -33,7 +33,8 @@ async def how_are_you(message: Message):
 
 @router.message(Command('get_photo'))
 async def get_photo(message: Message):
-    await message.answer_photo(photo='https://press.horseandcountry.tv/wp-content/uploads/2023/04/Picture1-1024x576.jpg', caption='Это то фото')
+    await message.answer_photo(photo='https://press.horseandcountry.tv/wp-content/uploads/2023/04/Picture1-1024x576.jpg',
+                               caption='Это то фото')
 
 
 @router.message(F.photo)
