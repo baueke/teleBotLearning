@@ -1,21 +1,20 @@
-from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton,
-                           InlineKeyboardMarkup, InlineKeyboardButton)
-from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
+from dataclasses import replace
 
-main = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Каталог', callback_data='catalog')],
-    [InlineKeyboardButton(text='Корзина', callback_data='basket'),
-     InlineKeyboardButton(text='Контакты', callback_data='contacts')]
-])
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
-settings = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='youtube', url='https://youtube.com/@sudoteach')]
-    ])
 
-cars = ['Tesla', 'Mercedes', 'BMW', 'Porsche']
+main = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Каталог')],
+                                     [KeyboardButton(text='Корзина')],
+                                     [KeyboardButton(text='Контакты'),
+                                      KeyboardButton(text='О нас')]],
+                           resize_keyboard=True,
+                           input_field_placeholder='Выберите пунк меню')
 
-async def inline_cars():
-    keyboard = InlineKeyboardBuilder()
-    for car in cars:
-        keyboard.add(InlineKeyboardButton(text=car, url='https://youtube.com/@sudoteach'))
-    return keyboard.adjust(2).as_markup()
+
+catalog = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Футболки', callback_data='t-shirt')],
+    [InlineKeyboardButton(text='Кросоовки', callback_data='sneakers')],
+    [InlineKeyboardButton(text='Кепки', callback_data='cap')]])
+
+get_number = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Отправить номер', request_contact=True)]],
+                                 resize_keyboard=True)

@@ -1,70 +1,64 @@
 from aiogram import F, Router
-from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery
+from aiogram.filters import CommandStart, Command
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 
 import app.keyboards as kb
-from app.middlewares import TestMiddleware
 
 router = Router()
 
-router.message.outer_middleware(TestMiddleware())
-
-class Reg(StatesGroup):
+class Register(StatesGroup):
     name = State()
+    age = State()
     number = State()
+
 
 @router.message(CommandStart())
 async def cmd_start(message: Message):
-    await message.reply(f'Привет. \nТвой ID: {message.from_user.id}\nИмя: {message.from_user.first_name}',
-                        reply_markup=kb.main)
+    await message.answer('Привет!', reply_markup=kb.main)
+    await message.reply('Как дела?')
 
 
 @router.message(Command('help'))
-async def get_help(message: Message):
-    await message.answer('Это команда /help')
+async def cmd_help(message: Message):
+    await message.answer('Вы нажали на кнопку помощи')
 
 
-@router.message(F.text == 'Как дела?')
-async def how_are_you(message: Message):
-    await message.answer('OK!')
+@router.message(F.text == 'Каталог')
+async def catalog(message: Message):
+    await message.answer('Выберите категорию товара', reply_markup=kb.catalog)
 
 
-@router.message(Command('get_photo'))
-async def get_photo(message: Message):
-    await message.answer_photo(photo='https://press.horseandcountry.tv/wp-content/uploads/2023/04/Picture1-1024x576.jpg',
-                               caption='Это то фото')
+@router.callback_query(F.data == 't-shirt')
+async def t_shirt(callback: CallbackQuery):
+    await callback.answer('Вы выбрали категорию', show_alert=True)
+    await callback.message.answer('Вы выбрали категорию футболок.')
 
 
-@router.message(F.photo)
-async def get_photo(message: Message):
-    await message.answer(f'ID фото: {message.photo[-1].file_id}')
-
-
-@router.callback_query(F.data == 'catalog')
-async def catalog(callback: CallbackQuery):
-    await callback.answer('Вы выбрали каталог', show_alert=True)
-    await callback.message.edit_text('Привет!', reply_markup=await kb.inline_cars())
-
-
-@router.message(Command('reg'))
-async def reg_first(message: Message, state: FSMContext):
-    await state.set_state(Reg.name)
+@router.message(Command('register'))
+async def register(message: Message, state: FSMContext):
+    await state.set_state(Register.name)
     await message.answer('Введите ваше имя')
 
 
-@router.message(Reg.name)
-async def reg_second(message: Message, state: FSMContext):
+@router.message(Register.name)
+async def register_name(message: Message, state: FSMContext):
     await state.update_data(name=message.text)
-    await state.set_state(Reg.number)
-    await message.answer('Введите номер телефона')
+    await state.set_state(Register.age)
+    await message.answer('Введите ваш возраст')
 
 
-@router.message(Reg.number)
-async def reg_third(message: Message, state: FSMContext):
-    await state.update_data(number=message.text)
+@router.message(Register.age)
+async def register_age(message: Message, state: FSMContext):
+    await state.update_data(age=message.text)
+    await state.set_state(Register.number)
+    await message.answer('Введите ваш номер', reply_markup=kb.get_number)
+
+
+@router.message(Register.number, F.contact)
+async def register_number(message: Message, state: FSMContext):
+    await state.update_data(number=message.contact.phone_number)
     data = await state.get_data()
-    await message.answer(f'Спасибо регистрация завершена.\nИмя: {data["name"]}\nНомер: {data["number"]}')
+    await message.answer(f'Ваше имя: {data["name"]}\nВаш возраст: {data["age"]}\nНомер: {data["number"]}')
     await state.clear()
-
